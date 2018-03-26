@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import './App.css';
-import Button from './button/Button';
+import RatingList from './ratingList';
 
 class App extends Component {
   
@@ -11,21 +11,26 @@ class App extends Component {
       isLoaded: false,
       items: [],
       rating: [],
-      value_for_total: null,
-      value_for_average: null
+      selectedRating: null
     };
   }
 
-  calculateAverage = (i) => {
-    const {items} = this.state;
-    const filteredItems = items.filter(item => item.rating === i);
+  selectRating = (rating) => {
+    this.setState(
+      {selectedRating: rating}
+    );
+  };
+
+  calculateAverage = () => {
+    const {items, selectedRating} = this.state;
+    const filteredItems = items.filter(item => selectedRating ? item.rating === selectedRating : true);
     const value_for_total = filteredItems.reduce((sum, a) => (sum + a.amount), 0);
     const value_for_average = value_for_total / filteredItems.length;
  
-     this.setState({
-       value_for_total: value_for_total,
-       value_for_average: value_for_average
-    });
+    return {
+      total: value_for_total,
+      average: value_for_average
+    };
   };
 
   handleRating = (items) => {
@@ -59,7 +64,8 @@ class App extends Component {
     }  
 
   render() {
-    const { error, isLoaded, rating } = this.state;
+    const { error, isLoaded, rating, selectedRating } = this.state;
+    const {total, average} = this.calculateAverage();
     if (error) {
       return <div>Error: {error.message}</div>;
     } else if (!isLoaded) {
@@ -67,12 +73,13 @@ class App extends Component {
     } else {
       return (
         <div>
-          <Button 
+          <RatingList 
+            selectedRating={selectedRating}
             rating={rating}
-            calculateAverage={this.calculateAverage}  
+            selectRating={this.selectRating}  
           />
-          <div>total: {this.state.value_for_total}</div>
-          <div>average: {this.state.value_for_average}</div>
+          <p>Total: {total}</p>
+          <p>Average: {average}</p>
         </div>
 
       );
